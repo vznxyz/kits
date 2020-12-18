@@ -1,0 +1,7 @@
+name: Kits
+version: 1.0
+author: joeleoli
+description: Kits with cooldowns
+main: net.evilblock.kits.KitsPlugin
+depend:
+  - Cubed
