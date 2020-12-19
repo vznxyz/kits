@@ -27,8 +27,12 @@ class Kit(val id: String) {
     val cooldowns: MutableMap<UUID, Long> = ConcurrentHashMap()
     var cooldownDuration: Duration? = null
 
+    fun getPermission(): String {
+        return "kits.redeem.${id.toLowerCase()}"
+    }
+
     fun hasPermission(player: Player): Boolean {
-        return player.hasPermission("kits.redeem.${id.toLowerCase()}")
+        return player.hasPermission(getPermission())
     }
 
     fun giveItems(player: Player) {

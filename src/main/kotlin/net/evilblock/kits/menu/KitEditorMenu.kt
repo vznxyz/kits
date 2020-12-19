@@ -163,7 +163,21 @@ class KitEditorMenu : PaginatedMenu() {
 
         override fun getDescription(player: Player): List<String> {
             return arrayListOf<String>().also { desc ->
+                val public = if (kit.public) {
+                    ChatColor.GREEN.toString() + "yes"
+                } else {
+                    ChatColor.RED.toString() + "no"
+                }
+
+                val requirePermission = if (kit.requiresPermission) {
+                    ChatColor.GREEN.toString() + "yes" + ChatColor.GRAY.toString() + ", " + kit.getPermission()
+                } else {
+                    ChatColor.RED.toString() + "no"
+                }
+
                 desc.add("${ChatColor.GRAY}(ID: ${kit.id})")
+                desc.add("${ChatColor.GRAY}(Public: ${public}${ChatColor.GRAY})")
+                desc.add("${ChatColor.GRAY}(Permission: ${requirePermission}${ChatColor.GRAY})")
                 desc.add("")
                 desc.add("${ChatColor.YELLOW}This kit contains...")
 
