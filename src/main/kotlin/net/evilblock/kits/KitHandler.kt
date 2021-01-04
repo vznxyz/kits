@@ -11,6 +11,7 @@ import com.google.common.base.Charsets
 import com.google.common.io.Files
 import com.google.gson.reflect.TypeToken
 import net.evilblock.cubed.Cubed
+import net.evilblock.cubed.backup.BackupHandler
 import net.evilblock.kits.menu.template.PublicKitsTemplate
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
@@ -18,17 +19,20 @@ import java.util.concurrent.ConcurrentHashMap
 object KitHandler {
 
     private val kitsDataFile: File = File(File(KitsPlugin.instance.dataFolder, "internal"), "kits.json")
-    private val templateDataFile: File = File(File(KitsPlugin.instance.dataFolder, "internal"), "template.json")
-
     private val kits: MutableMap<String, Kit> = ConcurrentHashMap()
 
-    private lateinit var menuTemplate: PublicKitsTemplate
+    private lateinit var template: PublicKitsTemplate
+    private val templateDataFile: File = File(File(KitsPlugin.instance.dataFolder, "internal"), "template.json")
+
+    var loaded: Boolean = false
 
     fun initialLoad() {
         kitsDataFile.parentFile.mkdirs()
         templateDataFile.parentFile.mkdirs()
 
         if (kitsDataFile.exists()) {
+            Files.copy(kitsDataFile, BackupHandler.findNextBackupFile("kits"))
+
             Files.newReader(kitsDataFile, Charsets.UTF_8).use { reader ->
                 val listType = object : TypeToken<List<Kit>>() {}.type
                 val list = Cubed.gson.fromJson(reader, listType) as List<Kit>
@@ -40,20 +44,19 @@ object KitHandler {
         }
 
         if (templateDataFile.exists()) {
-            try {
-                Files.newReader(templateDataFile, Charsets.UTF_8).use { reader ->
-                    menuTemplate = Cubed.gson.fromJson(reader, object : TypeToken<PublicKitsTemplate>() {}.type) as PublicKitsTemplate
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                menuTemplate = PublicKitsTemplate()
+            Files.newReader(templateDataFile, Charsets.UTF_8).use { reader ->
+                template = Cubed.gson.fromJson(reader, object : TypeToken<PublicKitsTemplate>() {}.type) as PublicKitsTemplate
             }
         } else {
-            menuTemplate = PublicKitsTemplate()
+            template = PublicKitsTemplate()
         }
     }
 
     fun saveData() {
+        if (!loaded) {
+            return
+        }
+
         try {
             Files.write(Cubed.gson.toJson(kits.values), kitsDataFile, Charsets.UTF_8)
         } catch (e: Exception) {
@@ -62,7 +65,7 @@ object KitHandler {
         }
 
         try {
-            Files.write(Cubed.gson.toJson(menuTemplate), templateDataFile, Charsets.UTF_8)
+            Files.write(Cubed.gson.toJson(template), templateDataFile, Charsets.UTF_8)
         } catch (e: Exception) {
             e.printStackTrace()
             KitsPlugin.instance.logger.severe("Failed to save template.json!")
@@ -86,11 +89,11 @@ object KitHandler {
     }
 
     fun getMenuTemplate(): PublicKitsTemplate {
-        return menuTemplate
+        return template
     }
 
     fun resetMenuTemplate() {
-        menuTemplate = PublicKitsTemplate()
+        template = PublicKitsTemplate()
     }
 
 }

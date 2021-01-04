@@ -107,15 +107,23 @@ class PublicKitsTemplate : MenuTemplate<Kit>(id = "kits") {
 
         override fun clicked(player: Player, slot: Int, clickType: ClickType, view: InventoryView) {
             if (clickType.isLeftClick) {
+                if (kit.requiresPermission) {
+                    if (!kit.hasPermission(player)) {
+                        player.sendMessage("${ChatColor.RED}You don't have permission to use that kit!")
+                        return
+                    }
+                }
+
                 if (kit.isCooldownSet() && kit.isOnCooldown(player)) {
                     val formattedCooldown = TimeUtil.formatIntoDetailedString((kit.getRemainingCooldown(player) / 1000.0).toInt())
                     player.sendMessage("${ChatColor.RED}You're on cooldown for another ${ChatColor.BOLD}$formattedCooldown${ChatColor.RED}!")
-                } else {
-                    kit.giveItems(player)
+                    return
+                }
 
-                    if (kit.isCooldownSet()) {
-                        kit.applyCooldown(player)
-                    }
+                kit.giveItems(player)
+
+                if (kit.isCooldownSet()) {
+                    kit.applyCooldown(player)
                 }
             }
         }

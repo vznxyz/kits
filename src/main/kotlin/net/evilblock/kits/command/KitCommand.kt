@@ -17,6 +17,13 @@ object KitCommand {
     )
     @JvmStatic
     fun execute(player: Player, @Param(name = "kit") kit: Kit) {
+        if (kit.requiresPermission) {
+            if (!kit.hasPermission(player)) {
+                player.sendMessage("${ChatColor.RED}You don't have permission to use that kit!")
+                return
+            }
+        }
+
         if (kit.isCooldownSet()) {
             if (kit.isOnCooldown(player)) {
                 val formattedCooldown = TimeUtil.formatIntoDetailedString((kit.getRemainingCooldown(player) / 1000.0).toInt())
